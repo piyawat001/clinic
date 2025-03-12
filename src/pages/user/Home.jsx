@@ -188,7 +188,7 @@ const Home = () => {
       <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
         <div className="relative">
           <img
-            src="/banner.jpg"
+            src="/src/assets/firstimg.png"
             alt="คลินิกนายแพทย์สุทธิลักษณ์ ปะไล"
             className="w-full rounded-lg"
           />
