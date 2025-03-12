@@ -14,6 +14,8 @@ import Home from './pages/user/Home'; // เปลี่ยนจาก placehol
 // Protected Routes Components
 import UserRoute from './components/common/UserRoute';
 import AdminRoute from './components/common/AdminRoute';
+import BookingForm from './pages/user/BookingForm';
+
 
 // Admin Pages - อาจยังใช้ placeholder ชั่วคราว
 const AdminDashboard = () => <div className="p-4">หน้าแดชบอร์ดผู้ดูแลระบบ - กำลังพัฒนา</div>;
@@ -31,6 +33,7 @@ function App() {
           {/* User Protected Routes */}
           <Route element={<UserRoute />}>
             <Route path="/user" element={<Home />} /> {/* เปลี่ยนเป็นหน้า Home */}
+            <Route path="/user/booking" element={<BookingForm />} />
             <Route path="/" element={<Navigate to="/user" replace />} />
           </Route>
           
