@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import axios from "../../config/axios";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
+import downArrow from "../../assets/down-arrow.png";
+import upArrow from "../../assets/up-arrow.png";
 
 const Home = () => {
   const { currentUser } = useAuth();
@@ -563,28 +565,30 @@ const Home = () => {
         </div>
       </div>
       {/* Fixed Bottom Navigation */}
-      <div className="fixed right-4 bottom-20">
+      <div className="fixed right-4 bottom-20 space-y-3">
         <Link
           to="#top"
-          className="bg-green-500 text-white p-3 rounded-full shadow-lg"
+          className="bg-green-500 text-white p-3 rounded-full shadow-lg flex items-center justify-center"
           onClick={(e) => {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M5 10l7-7m0 0l7 7m-7-7v18"
-            />
-          </svg>
+          <img src={upArrow} alt="เลื่อนขึ้นบน" className="w-6 h-6" />
+        </Link>
+
+        <Link
+          to="#bottom"
+          className="bg-green-500 text-white p-3 rounded-full shadow-lg flex items-center justify-center"
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({
+              top: document.body.scrollHeight,
+              behavior: "smooth",
+            });
+          }}
+        >
+          <img src={downArrow} alt="เลื่อนลงล่าง" className="w-6 h-6" />
         </Link>
       </div>
     </div>
