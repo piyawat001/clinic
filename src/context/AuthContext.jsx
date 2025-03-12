@@ -43,6 +43,10 @@ export const AuthProvider = ({ children }) => {
   const getUserProfile = async () => {
     try {
       const response = await axios.get('/users/profile');
+      
+      // เพิ่มบรรทัดนี้เพื่อเก็บข้อมูลผู้ใช้ใน localStorage
+      localStorage.setItem('userInfo', JSON.stringify(response.data));
+      
       setCurrentUser(response.data);
       setLoading(false);
     } catch (error) {
@@ -58,10 +62,13 @@ export const AuthProvider = ({ children }) => {
       
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
       
       // Fetch user profile
       const profileResponse = await axios.get('/users/profile');
+      
+      // เพิ่มบรรทัดนี้เพื่อเก็บข้อมูลผู้ใช้ใน localStorage
+      localStorage.setItem('userInfo', JSON.stringify(profileResponse.data));
+      
       setCurrentUser(profileResponse.data);
       
       // Determine if user is admin
@@ -95,6 +102,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userInfo'); // เพิ่มบรรทัดนี้
     delete axios.defaults.headers.common['Authorization'];
     setCurrentUser(null);
     navigate('/login');

@@ -14,7 +14,7 @@ const Home = () => {
     const fetchBookingData = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get('/api/bookings');
+        const response = await axios.get('/bookings');
         setBookingData(response.data);
       } catch (error) {
         console.error('Error fetching booking data:', error);
@@ -22,10 +22,20 @@ const Home = () => {
       } finally {
         setIsLoading(false);
       }
+      const userInfoFromStorage = localStorage.getItem('userInfo');
+      if (!currentUser && userInfoFromStorage) {
+        try {
+          const parsedUser = JSON.parse(userInfoFromStorage);
+          // ทำอะไรกับข้อมูลผู้ใช้ตามต้องการ เช่น อัพเดต state ในคอมโพเนนต์
+          console.log('User info from localStorage:', parsedUser);
+        } catch (error) {
+          console.error('Error parsing user info from localStorage:', error);
+        }
+      }
     };
     
     fetchBookingData();
-  }, []);
+  }, [currentUser]);
   
   return (
     <div className="bg-green-50 min-h-screen pb-16">
