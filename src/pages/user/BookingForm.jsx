@@ -19,7 +19,8 @@ const BookingForm = () => {
     phone: currentUser?.phone || '',
     appointmentDate: '',
     appointmentTime: '',
-    initialSymptoms: ''
+    initialSymptoms: '',
+    symptom: ''
   });
   
   // สร้าง state สำหรับ validation
@@ -28,9 +29,21 @@ const BookingForm = () => {
   // สร้าง state สำหรับควบคุมการแสดงโมดัลเลือกเวลา
   const [showTimeModal, setShowTimeModal] = useState(false);
   
+  // สร้าง state สำหรับควบคุมการแสดงโมดัลยืนยันการจอง
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  
   // กำหนดขอบเขตของวันที่สามารถเลือกได้
   const today = new Date();
   const minDate = today.toISOString().split('T')[0]; // วันนี้ในรูปแบบ YYYY-MM-DD
+  
+  // ฟังก์ชันแปลงรูปแบบวันที่เป็นภาษาไทย
+  const formatThaiDate = (dateString) => {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return date.toLocaleDateString('th-TH', options);
+  };
   
   // รายการอาการให้เลือก
   const symptoms = [
@@ -170,8 +183,8 @@ const BookingForm = () => {
     return Object.keys(newErrors).length === 0;
   };
   
-  // ส่งข้อมูลการจอง
-  const handleSubmit = async (e) => {
+  // แสดงโมดัลยืนยันการจอง
+  const handleProceedToConfirm = (e) => {
     e.preventDefault();
     
     // ตรวจสอบความถูกต้องของข้อมูล
@@ -180,6 +193,12 @@ const BookingForm = () => {
       return;
     }
     
+    // แสดงโมดัลยืนยันการจอง
+    setShowConfirmModal(true);
+  };
+  
+  // ส่งข้อมูลการจอง
+  const handleSubmit = async () => {
     // เตรียมข้อมูลสำหรับส่งไปยังเซิร์ฟเวอร์
     const bookingPayload = {
       appointmentDate: bookingData.appointmentDate,
@@ -193,6 +212,9 @@ const BookingForm = () => {
       // ส่งข้อมูลไปยัง API
       await axios.post('/bookings', bookingPayload);
       
+      // ปิดโมดัลยืนยัน
+      setShowConfirmModal(false);
+      
       toast.success('จองนัดหมายสำเร็จ');
       
       // Redirect กลับไปหน้า Home หรือหน้าแสดงรายละเอียดการจอง
@@ -200,9 +222,26 @@ const BookingForm = () => {
     } catch (error) {
       console.error('Booking error:', error);
       toast.error(error.response?.data?.message || 'เกิดข้อผิดพลาดในการจองนัดหมาย');
+      
+      // ปิดโมดัลยืนยัน
+      setShowConfirmModal(false);
     } finally {
       setIsSubmitting(false);
     }
+  };
+  
+  // ฟอร์แมตเบอร์โทรศัพท์ให้อ่านง่าย
+  const formatPhone = (phone) => {
+    if (!phone) return '';
+    
+    // แสดงเบอร์โทรในรูปแบบ 099-019-**** (แสดงเฉพาะ 7 ตัวแรก)
+    const visiblePart = phone.substring(0, 7);
+    const hiddenPart = phone.substring(7).replace(/./g, '*');
+    
+    // จัดรูปแบบ XXX-XXX-XXXX
+    const formatted = `${visiblePart.substring(0, 3)}-${visiblePart.substring(3, 6)}-${hiddenPart}`;
+    
+    return formatted;
   };
   
   return (
@@ -210,7 +249,7 @@ const BookingForm = () => {
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold text-center text-green-800 mb-6">จองนัดหมาย</h2>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleProceedToConfirm} className="space-y-4">
           {/* ชื่อ */}
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -416,11 +455,71 @@ const BookingForm = () => {
               disabled={isSubmitting}
               className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
             >
-              {isSubmitting ? 'กำลังส่งข้อมูล...' : 'ยืนยันการจอง'}
+              {isSubmitting ? 'กำลังส่งข้อมูล...' : 'ดำเนินการต่อ'}
             </button>
           </div>
         </form>
       </div>
+      
+      {/* โมดัลยืนยันการจอง */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg max-w-md w-full mx-4">
+            <div className="p-4 bg-green-500 rounded-t-lg">
+              <h2 className="text-xl font-semibold text-center text-white">สรุปการจองคิว</h2>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <div className="flex">
+                  <div className="w-1/3 font-medium">ผู้จอง :</div>
+                  <div className="w-2/3">{`${bookingData.firstName} ${bookingData.lastName}`}</div>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/3 font-medium">เบอร์ติดต่อ :</div>
+                  <div className="w-2/3">{formatPhone(bookingData.phone)}</div>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/3 font-medium">บริการ :</div>
+                  <div className="w-2/3">{bookingData.initialSymptoms}</div>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/3 font-medium">วันจอง :</div>
+                  <div className="w-2/3">{formatThaiDate(bookingData.appointmentDate)}</div>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/3 font-medium">เวลาจอง :</div>
+                  <div className="w-2/3">{bookingData.appointmentTime}</div>
+                </div>
+              </div>
+              
+              <div className="pt-2 space-y-3">
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="w-full py-3 bg-blue-600 text-white rounded-md font-medium"
+                >
+                  {isSubmitting ? 'กำลังส่งข้อมูล...' : 'ยืนยัน'}
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmModal(false)}
+                  disabled={isSubmitting}
+                  className="w-full py-3 bg-gray-200 text-gray-700 rounded-md font-medium"
+                >
+                  ย้อนกลับ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
