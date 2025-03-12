@@ -3,11 +3,19 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../../config/axios';
 import { toast } from 'react-toastify';
+// นำเข้า BookingDetailsModal component
+import BookingDetailsModal from '../../components/common/BookingDetailsModal';
+// นำเข้าฟังก์ชันจัดรูปแบบจากไฟล์ utility
+import { formatThaiDate, formatTime, getStatusInfo } from '../../utils/formatters';
 
 const BookingHistory = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'upcoming', 'past', 'cancelled'
+  
+  // State สำหรับ modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -48,47 +56,22 @@ const BookingHistory = () => {
     return true;
   });
 
-  // Format date to Thai format
-  const formatThaiDate = (dateString) => {
-    if (!dateString) return "";
-
-    const date = new Date(dateString);
-
-    // Thai month names
-    const thaiMonths = [
-      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
-    ];
-
-    const day = date.getDate();
-    const month = thaiMonths[date.getMonth()];
-    const thaiYear = date.getFullYear() + 543;
-
-    return `${day} ${month} ${thaiYear}`;
+  // อัพเดตรายการเมื่อมีการยกเลิกการจอง
+  const handleCancelSuccess = (cancelledBookingId) => {
+    // กรองรายการที่ยกเลิกออกจากหน้าจอทันที
+    setBookings(prevBookings => 
+      prevBookings.map(booking => 
+        booking._id === cancelledBookingId 
+          ? { ...booking, status: 'cancelled' } 
+          : booking
+      )
+    );
   };
 
-  // Format time from "HH:MM" to "HH.MM"
-  const formatTime = (timeString) => {
-    if (!timeString) return "";
-    return timeString.replace(":", ".");
-  };
-
-  // Get status text and color
-  const getStatusInfo = (status) => {
-    switch (status) {
-      case 'pending':
-        return { text: 'รอดำเนินการ', color: 'bg-yellow-100 text-yellow-800' };
-      case 'confirmed':
-        return { text: 'ยืนยันแล้ว', color: 'bg-blue-100 text-blue-800' };
-      case 'completed':
-        return { text: 'เสร็จสิ้น', color: 'bg-green-100 text-green-800' };
-      case 'cancelled':
-        return { text: 'ยกเลิกแล้ว', color: 'bg-red-100 text-red-800' };
-      case 'in-progress':
-        return { text: 'กำลังดำเนินการ', color: 'bg-purple-100 text-purple-800' };
-      default:
-        return { text: 'ไม่ทราบสถานะ', color: 'bg-gray-100 text-gray-800' };
-    }
+  // เปิด Modal แสดงรายละเอียดการจอง
+  const handleViewBookingDetails = (bookingId) => {
+    setSelectedBookingId(bookingId);
+    setIsModalOpen(true);
   };
 
   return (
@@ -198,7 +181,7 @@ const BookingHistory = () => {
                     <div className="mb-3">
                       <h4 className="text-sm text-gray-600">อาการเบื้องต้น:</h4>
                       <p className="text-gray-800">
-                        {booking.initialSymptoms || 'ไม่ได้ระบุ'}
+                        {booking.initialSymptoms || booking.symptoms || 'ไม่ได้ระบุ'}
                       </p>
                     </div>
                     
@@ -210,12 +193,12 @@ const BookingHistory = () => {
                     )}
                     
                     <div className="flex justify-end mt-2">
-                      <Link
-                        to={`/user/booking/${booking._id}`}
+                      <button
+                        onClick={() => handleViewBookingDetails(booking._id)}
                         className="text-blue-600 text-sm font-medium"
                       >
                         ดูรายละเอียด
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -224,6 +207,14 @@ const BookingHistory = () => {
           </div>
         )}
       </div>
+
+      {/* Modal Component */}
+      <BookingDetailsModal
+        bookingId={selectedBookingId}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCancelSuccess={handleCancelSuccess}
+      />
     </div>
   );
 };

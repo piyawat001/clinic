@@ -6,6 +6,10 @@ import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
 import downArrow from "../../assets/down-arrow.png";
 import upArrow from "../../assets/up-arrow.png";
+// Import the modal component
+import BookingDetailsModal from "../../components/common/BookingDetailsModal";
+// นำเข้าฟังก์ชันจัดรูปแบบจากไฟล์ utility
+import { formatThaiDate, formatTime, getEstimatedTime } from "../../utils/formatters";
 
 const Home = () => {
   const { currentUser, logout } = useAuth();
@@ -18,6 +22,10 @@ const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(3);
 
+  // สถานะสำหรับ Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -27,69 +35,22 @@ const Home = () => {
     navigate('/login');
   };
 
-  // ฟังก์ชันสำหรับแปลงรูปแบบวันที่เป็นภาษาไทย
-  const formatThaiDate = (dateString) => {
-    if (!dateString) return "";
-
-    const date = new Date(dateString);
-
-    // อาร์เรย์ชื่อเดือนภาษาไทย
-    const thaiMonths = [
-      "มกราคม",
-      "กุมภาพันธ์",
-      "มีนาคม",
-      "เมษายน",
-      "พฤษภาคม",
-      "มิถุนายน",
-      "กรกฎาคม",
-      "สิงหาคม",
-      "กันยายน",
-      "ตุลาคม",
-      "พฤศจิกายน",
-      "ธันวาคม",
-    ];
-
-    // แปลงปี พ.ศ.
-    const day = date.getDate();
-    const month = thaiMonths[date.getMonth()];
-    const thaiYear = date.getFullYear() + 543;
-
-    // สร้างรูปแบบวันที่ "วันที่ เดือน พ.ศ."
-    return `${day} ${month} ${thaiYear}`;
+  // อัพเดตรายการเมื่อมีการยกเลิกการจอง
+  const handleCancelSuccess = (cancelledBookingId) => {
+    // กรองรายการที่ยกเลิกออกจากหน้าจอทันที
+    setBookings(prevBookings => 
+      prevBookings.map(booking => 
+        booking._id === cancelledBookingId 
+          ? { ...booking, status: 'cancelled' } 
+          : booking
+      )
+    );
   };
 
-  // แปลงเวลารูปแบบ "HH:MM" เป็น "HH.MM"
-  const formatTime = (timeString) => {
-    if (!timeString) return "";
-    return timeString.replace(":", ".");
-  };
-
-  // ใช้เวลาที่คาดว่าจะเข้าตรวจจาก API หรือคำนวณเอง
-  const getEstimatedTime = (booking) => {
-    // ถ้า API ส่ง estimatedTime มาให้ ใช้ค่านั้นเลย
-    if (booking.estimatedTime) {
-      return formatTime(booking.estimatedTime);
-    }
-
-    // ถ้าไม่มี ให้คำนวณเอง (เพิ่ม 10 นาที)
-    if (!booking.appointmentTime) return "";
-
-    const [hours, minutes] = booking.appointmentTime.split(":").map(Number);
-    let newMinutes = minutes + 10;
-    let newHours = hours;
-
-    if (newMinutes >= 60) {
-      newMinutes -= 60;
-      newHours += 1;
-      if (newHours >= 24) {
-        newHours -= 24;
-      }
-    }
-
-    const formattedHours = String(newHours).padStart(2, "0");
-    const formattedMinutes = String(newMinutes).padStart(2, "0");
-
-    return `${formattedHours}.${formattedMinutes}`;
+  // เปิด Modal และแสดงรายละเอียดการจอง
+  const handleViewBookingDetails = (bookingId) => {
+    setSelectedBookingId(bookingId);
+    setIsModalOpen(true);
   };
 
   useEffect(() => {
@@ -349,12 +310,12 @@ const Home = () => {
                           {getEstimatedTime(booking)}
                         </p>
                       </div>
-                      <Link
-                        to={`/user/booking/${booking._id}`}
+                      <button
+                        onClick={() => handleViewBookingDetails(booking._id)}
                         className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm self-center"
                       >
                         ดูรายละเอียด
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 );
@@ -676,6 +637,14 @@ const Home = () => {
           <img src={downArrow} alt="เลื่อนลงล่าง" className="w-6 h-6" />
         </Link>
       </div>
+
+      {/* Modal Component */}
+      <BookingDetailsModal
+        bookingId={selectedBookingId}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCancelSuccess={handleCancelSuccess}
+      />
     </div>
   );
 };
