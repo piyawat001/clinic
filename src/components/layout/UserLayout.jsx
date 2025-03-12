@@ -1,129 +1,35 @@
 // src/components/layout/UserLayout.jsx
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 
-const UserLayout = ({ children }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+const UserLayout = () => {
+  const location = useLocation();
+  
+  // Check active route for highlighting current tab
+  const isActiveRoute = (path) => {
+    return location.pathname.startsWith(path);
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Mobile Header */}
-      
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
-                <h1 className="text-xl font-bold text-blue-600">Medical App</h1>
-              </div>
-            </div>
-            <div className="flex items-center">
-              <button
-                type="button"
-                onClick={toggleMenu}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-                aria-expanded="false"
-              >
-                <span className="sr-only">เปิดเมนู</span>
-                {/* Menu Icon */}
-                <svg
-                  className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-                {/* X Icon */}
-                <svg
-                  className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-                </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden`}>
-          <div className="pt-2 pb-3 space-y-1">
-            <Link
-              to="/user"
-              className="block pl-3 pr-4 py-2 border-l-4 border-blue-500 text-base font-medium text-blue-700 bg-blue-50"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              หน้าหลัก
-            </Link>
-            <Link
-              to="/user/booking"
-              className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              นัดหมาย
-            </Link>
-            <Link
-              to="/user/profile"
-              className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              โปรไฟล์
-            </Link>
-            <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                handleLogout();
-              }}
-              className="block w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
-            >
-              ออกจากระบบ
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
+      {/* เริ่มหน้าเว็บโดยไม่มี header */}
       <main className="flex-grow">
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          {children}
-        </div>
+        <Outlet />
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden bg-white border-t border-gray-200 fixed bottom-0 w-full">
+      <nav className="md:hidden bg-white border-t border-gray-200 fixed bottom-0 w-full z-50">
         <div className="flex justify-around">
           <Link
             to="/user"
-            className="flex flex-col items-center py-3 px-1 text-blue-600"
+            className={`flex flex-col items-center py-3 px-1 ${
+              isActiveRoute('/user') && 
+              !location.pathname.includes('/user/booking') && 
+              !location.pathname.includes('/user/profile') && 
+              !location.pathname.includes('/user/personal-info') && 
+              !location.pathname.includes('/user/change-password') && 
+              !location.pathname.includes('/user/booking-history')
+                ? 'text-blue-600' : 'text-gray-600'
+            }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -143,7 +49,10 @@ const UserLayout = ({ children }) => {
           </Link>
           <Link
             to="/user/booking"
-            className="flex flex-col items-center py-3 px-1 text-gray-600"
+            className={`flex flex-col items-center py-3 px-1 ${
+              isActiveRoute('/user/booking') && !location.pathname.includes('booking-history') 
+                ? 'text-blue-600' : 'text-gray-600'
+            }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -163,7 +72,13 @@ const UserLayout = ({ children }) => {
           </Link>
           <Link
             to="/user/profile"
-            className="flex flex-col items-center py-3 px-1 text-gray-600"
+            className={`flex flex-col items-center py-3 px-1 ${
+              isActiveRoute('/user/profile') || 
+              isActiveRoute('/user/personal-info') || 
+              isActiveRoute('/user/change-password') ||
+              isActiveRoute('/user/booking-history')
+                ? 'text-blue-600' : 'text-gray-600'
+            }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

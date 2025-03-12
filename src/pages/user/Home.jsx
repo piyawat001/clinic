@@ -1,6 +1,6 @@
 // src/pages/user/Home.jsx
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "../../config/axios";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
@@ -8,13 +8,24 @@ import downArrow from "../../assets/down-arrow.png";
 import upArrow from "../../assets/up-arrow.png";
 
 const Home = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   // สถานะสำหรับ pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(3);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   // ฟังก์ชันสำหรับแปลงรูปแบบวันที่เป็นภาษาไทย
   const formatThaiDate = (dateString) => {
@@ -176,14 +187,89 @@ const Home = () => {
 
   return (
     <div className="bg-green-50 min-h-screen pb-16">
-      {/* Welcome Message - ใช้ currentUser */}
+      {/* Custom Header ใหม่ */}
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-end h-16">
+            <div className="flex items-center">
+              <button
+                type="button"
+                onClick={toggleMenu}
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                aria-expanded="false"
+              >
+                <span className="sr-only">เปิดเมนู</span>
+                {/* Menu Icon */}
+                <svg
+                  className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+                {/* X Icon */}
+                <svg
+                  className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu - เหลือแค่ logout */}
+        <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden`}>
+          <div className="pt-2 pb-3 space-y-1">
+            <button
+              onClick={() => {
+                setIsMenuOpen(false);
+                handleLogout();
+              }}
+              className="block w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+            >
+              ออกจากระบบ
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Welcome Message with Profile Link */}
       {currentUser && (
-        <div className="bg-white px-4 py-2 shadow-sm">
+        <div className="bg-white px-4 py-3 shadow-sm mb-4 flex justify-between items-center">
           <p className="text-sm text-gray-600">
             สวัสดี, คุณ{currentUser.firstName} {currentUser.lastName}
           </p>
+          <Link to="/user/profile" className="flex items-center text-green-700">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-1">
+              <span className="text-green-700 font-medium">
+                {currentUser.firstName
+                  ? currentUser.firstName.charAt(0).toUpperCase()
+                  : "ค"}
+              </span>
+            </div>
+          </Link>
         </div>
       )}
+      
       {/* Header Banner */}
       <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
         <div className="relative">
@@ -318,14 +404,13 @@ const Home = () => {
                   </button>
                 </div>
               )}
-
-              {/* ลบลิงก์ดาวน์โหลดข้อมูล */}
             </div>
           ) : (
             <p className="text-gray-500 text-center py-4">ไม่พบข้อมูลการจอง</p>
           )}
         </div>
       </div>
+
       {/* Services */}
       <div className="mx-4 mb-6">
         <div className="bg-gray-100 rounded-lg p-4">

@@ -9,13 +9,19 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 
 // User Pages
-import Home from './pages/user/Home'; // เปลี่ยนจาก placeholder เป็นหน้า Home จริง
+import Home from './pages/user/Home';
+import UserLayout from './components/layout/UserLayout';
+import BookingForm from './pages/user/BookingForm';
+
+// User Profile Pages
+import UserProfile from './pages/user/UserProfile';
+import PersonalInfo from './pages/user/PersonalInfo';
+import ChangePassword from './pages/user/ChangePassword';
+import BookingHistory from './pages/user/BookingHistory';
 
 // Protected Routes Components
 import UserRoute from './components/common/UserRoute';
 import AdminRoute from './components/common/AdminRoute';
-import BookingForm from './pages/user/BookingForm';
-
 
 // Admin Pages - อาจยังใช้ placeholder ชั่วคราว
 const AdminDashboard = () => <div className="p-4">หน้าแดชบอร์ดผู้ดูแลระบบ - กำลังพัฒนา</div>;
@@ -32,8 +38,16 @@ function App() {
           
           {/* User Protected Routes */}
           <Route element={<UserRoute />}>
-            <Route path="/user" element={<Home />} /> {/* เปลี่ยนเป็นหน้า Home */}
-            <Route path="/user/booking" element={<BookingForm />} />
+            <Route path="/user" element={<UserLayout />}>
+              <Route index element={<Home />} />
+              <Route path="booking" element={<BookingForm />} />
+              
+              {/* Profile Routes */}
+              <Route path="profile" element={<UserProfile />} />
+              <Route path="personal-info" element={<PersonalInfo />} />
+              <Route path="change-password" element={<ChangePassword />} />
+              <Route path="booking-history" element={<BookingHistory />} />
+            </Route>
             <Route path="/" element={<Navigate to="/user" replace />} />
           </Route>
           
