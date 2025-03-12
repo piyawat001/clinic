@@ -53,14 +53,15 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('/api/users/login', { email, password });
+      const response = await axios.post('/users/login', { email, password });
       const { token } = response.data;
       
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
       
       // Fetch user profile
-      const profileResponse = await axios.get('/api/users/profile');
+      const profileResponse = await axios.get('/users/profile');
       setCurrentUser(profileResponse.data);
       
       // Determine if user is admin

@@ -8,16 +8,13 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 
-// User Pages
-import UserHome from './pages/user/Home'; // อย่าลืม import หน้า Home ที่คุณสร้าง
-
-// Admin Pages
-import AdminDashboard from './pages/admin/Dashboard';
-
 // Protected Routes Components
 import UserRoute from './components/common/UserRoute';
+import AdminRoute from './components/common/AdminRoute';
 
-
+// Placeholder Pages - จะถูกแทนที่ด้วยหน้าจริงในภายหลัง
+const UserHome = () => <div className="p-4">หน้าหลักสำหรับผู้ใช้ - กำลังพัฒนา</div>;
+const AdminDashboard = () => <div className="p-4">หน้าแดชบอร์ดผู้ดูแลระบบ - กำลังพัฒนา</div>;
 
 function App() {
   return (
@@ -32,17 +29,14 @@ function App() {
           {/* User Protected Routes */}
           <Route element={<UserRoute />}>
             <Route path="/user" element={<UserHome />} />
-            {/* เพิ่มเส้นทางอื่นๆ สำหรับผู้ใช้ */}
+            <Route path="/" element={<Navigate to="/user" replace />} />
           </Route>
           
           {/* Admin Protected Routes */}
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminDashboard />} />
-            {/* เพิ่มเส้นทางอื่นๆ สำหรับผู้ดูแลระบบ */}
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
           </Route>
-          
-          {/* Default Route */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
           
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to="/" replace />} />

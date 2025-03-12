@@ -5,7 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 const UserLayout = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const {  logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
 
   const toggleMenu = () => {
@@ -20,6 +20,7 @@ const UserLayout = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Mobile Header */}
+      
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -68,7 +69,7 @@ const UserLayout = ({ children }) => {
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-              </button>
+                </button>
             </div>
           </div>
         </div>
