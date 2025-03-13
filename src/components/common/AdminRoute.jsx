@@ -5,6 +5,9 @@ import AdminLayout from '../layout/AdminLayout';
 
 const AdminRoute = () => {
   const { currentUser, loading, isAdmin } = useAuth();
+  
+  // Add debug log to check values
+  console.log("AdminRoute check:", { currentUser, isAdmin, userRole: currentUser?.role, userIsAdmin: currentUser?.isAdmin });
 
   // Show loading spinner if still checking auth status
   if (loading) {
@@ -16,7 +19,8 @@ const AdminRoute = () => {
   }
 
   // Redirect to login if not authenticated or not admin
-  if (!currentUser || !isAdmin) {
+  // Check multiple conditions to support both isAdmin field and role field
+  if (!currentUser || !(isAdmin || currentUser.isAdmin || currentUser.role === 'admin')) {
     return <Navigate to="/login" replace />;
   }
 

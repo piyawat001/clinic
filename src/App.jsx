@@ -8,6 +8,12 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 
+// ส่วนของผู้ดูแลระบบ
+import Dashboard from './pages/admin/Dashboard';
+import Bookings from './pages/admin/Bookings';
+import Users from './pages/admin/Users';
+import Statistics from './pages/admin/Statistics';
+
 // User Pages
 import Home from './pages/user/Home';
 import UserLayout from './components/layout/UserLayout';
@@ -23,9 +29,6 @@ import BookingHistory from './pages/user/BookingHistory';
 import UserRoute from './components/common/UserRoute';
 import AdminRoute from './components/common/AdminRoute';
 
-// Admin Pages - อาจยังใช้ placeholder ชั่วคราว
-const AdminDashboard = () => <div className="p-4">หน้าแดชบอร์ดผู้ดูแลระบบ - กำลังพัฒนา</div>;
-
 function App() {
   return (
     <Router>
@@ -35,6 +38,15 @@ function App() {
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
+          {/* หน้าสำหรับผู้ดูแลระบบ */}
+          <Route path="/admin" element={<AdminRoute />}>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="bookings" element={<Bookings />} />
+            <Route path="users" element={<Users />} />
+            <Route path="statistics" element={<Statistics />} />
+            <Route index element={<Navigate to="/admin/dashboard" />} />
+          </Route>
           
           {/* User Protected Routes */}
           <Route element={<UserRoute />}>
@@ -49,12 +61,6 @@ function App() {
               <Route path="booking-history" element={<BookingHistory />} />
             </Route>
             <Route path="/" element={<Navigate to="/user" replace />} />
-          </Route>
-          
-          {/* Admin Protected Routes */}
-          <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
           </Route>
           
           {/* Fallback Route */}

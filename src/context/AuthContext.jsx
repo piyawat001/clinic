@@ -135,20 +135,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        currentUser,
-        loading,
-        login,
-        register,
-        logout,
-        updateProfile,
-        changePassword,
-        isAdmin: currentUser?.role === 'admin'
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+return (
+  <AuthContext.Provider
+    value={{
+      currentUser,
+      loading,
+      login,
+      register,
+      logout,
+      updateProfile,
+      changePassword,
+      // แก้ไขเป็น - ตรวจสอบทั้ง isAdmin field และ role field
+      isAdmin: currentUser?.isAdmin === true || currentUser?.role === 'admin'
+    }}
+  >
+    {children}
+  </AuthContext.Provider>
+);
 };
