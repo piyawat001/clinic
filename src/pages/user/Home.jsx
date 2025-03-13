@@ -1,6 +1,6 @@
 // src/pages/user/Home.jsx
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "../../config/axios";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
@@ -9,14 +9,17 @@ import upArrow from "../../assets/up-arrow.png";
 // Import the modal component
 import BookingDetailsModal from "../../components/common/BookingDetailsModal";
 // นำเข้าฟังก์ชันจัดรูปแบบจากไฟล์ utility
-import { formatThaiDate, formatTime, getEstimatedTime } from "../../utils/formatters";
+import {
+  formatThaiDate,
+  formatTime,
+  getEstimatedTime,
+} from "../../utils/formatters";
 
 const Home = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
 
   // สถานะสำหรับ pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -26,22 +29,13 @@ const Home = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   // อัพเดตรายการเมื่อมีการยกเลิกการจอง
   const handleCancelSuccess = (cancelledBookingId) => {
     // กรองรายการที่ยกเลิกออกจากหน้าจอทันที
-    setBookings(prevBookings => 
-      prevBookings.map(booking => 
-        booking._id === cancelledBookingId 
-          ? { ...booking, status: 'cancelled' } 
+    setBookings((prevBookings) =>
+      prevBookings.map((booking) =>
+        booking._id === cancelledBookingId
+          ? { ...booking, status: "cancelled" }
           : booking
       )
     );
@@ -148,70 +142,8 @@ const Home = () => {
 
   return (
     <div className="bg-green-50 min-h-screen pb-16">
-      {/* Custom Header ใหม่ */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-end h-16">
-            <div className="flex items-center">
-              <button
-                type="button"
-                onClick={toggleMenu}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-                aria-expanded="false"
-              >
-                <span className="sr-only">เปิดเมนู</span>
-                {/* Menu Icon */}
-                <svg
-                  className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-                {/* X Icon */}
-                <svg
-                  className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu - เหลือแค่ logout */}
-        <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden`}>
-          <div className="pt-2 pb-3 space-y-1">
-            <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                handleLogout();
-              }}
-              className="block w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
-            >
-              ออกจากระบบ
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* Header ที่แก้ไขแล้ว (ไม่มี Hamburger Menu) */}
+      <header className="bg-white shadow-sm sticky top-0 z-50"></header>
 
       {/* Welcome Message with Profile Link */}
       {currentUser && (
@@ -230,7 +162,7 @@ const Home = () => {
           </Link>
         </div>
       )}
-      
+
       {/* Header Banner */}
       <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
         <div className="relative">
@@ -239,14 +171,7 @@ const Home = () => {
             alt="คลินิกนายแพทย์สุทธิลักษณ์ ปะไล"
             className="w-full rounded-lg"
           />
-          <div className="absolute bottom-4 right-4 flex space-x-2">
-            <button className="bg-red-500 text-white px-3 py-1 rounded-md text-sm">
-              โทรทันที
-            </button>
-            <button className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">
-              Line OA
-            </button>
-          </div>
+          
         </div>
       </div>
       {/* Main Title */}
@@ -588,7 +513,7 @@ const Home = () => {
           {/* Social Media Icons */}
           <div className="flex justify-center space-x-4">
             <a
-              href="#facebook"
+              href="https://www.facebook.com/suttilakclinic?mibextid=wwXIfr&rdid=6FbHeDf50YpWsL4C&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1EGuH3rc3m%2F%3Fmibextid%3DwwXIfr#"
               className="bg-blue-600 text-white rounded-full p-3 shadow-md"
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -596,16 +521,16 @@ const Home = () => {
               </svg>
             </a>
             <a
-              href="#line"
-              className="bg-green-500 text-white rounded-full p-3 shadow-md"
+              href="https://line.me/R/ti/p/@175ppdyn"
+              className="bg-green-500 text-white rounded-full p-3 shadow-md inline-flex items-center justify-center"
             >
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M22 10.6C22 14.6 16.6 19.1 12 22C7.3 19.1 2 14.6 2 10.6C2 6.6 6.5 3.3 12 3.3C17.5 3.3 22 6.5 22 10.6Z" />
-                <path
-                  fill="white"
-                  d="M13.5 14.2H10.5V13.1H11.8V10.4H10.5V9.3H13V13.1H13.5V14.2ZM13.4 8.7H11.6V7.6H13.4V8.7Z"
+              <div className="w-6 h-6 flex items-center justify-center">
+                <img
+                  src="/src/assets/line.png"
+                  alt="LINE"
+                  className="w-10 h-10 object-contain"
                 />
-              </svg>
+              </div>
             </a>
           </div>
         </div>

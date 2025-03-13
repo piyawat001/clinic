@@ -300,7 +300,7 @@ const BookingForm = () => {
             </li>
             <li className="flex justify-between">
               <span>วันเสาร์ - อาทิตย์:</span>
-              <span className="font-medium text-red-500">ปิดทำการ</span>
+              <span className="font-medium text-red-500">ปิดการให้จอง</span>
             </li>
           </ul>
           <p className="mt-2 text-sm text-gray-600">
@@ -311,7 +311,7 @@ const BookingForm = () => {
           <h4 className="font-medium text-blue-800">ข้อมูลการจอง</h4>
           <ul className="mt-1 text-sm text-blue-700 list-disc list-inside">
             <li>คลินิกเปิดให้บริการวันจันทร์ - ศุกร์ เวลา 16:00 - 20:30น.</li>
-            <li>ปิดให้บริการวันเสาร์และวันอาทิตย์</li>
+            <li>ปิดให้บริการการจองวันเสาร์และวันอาทิตย์ เปิดรับหน้าร้าน</li>
             <li>สามารถจองล่วงหน้าได้สูงสุด 30 วัน</li>
             <li>กรุณาเข้ารับบริการก่อนเวลานัดหมาย 15 นาที</li>
             <li>จำกัด 2 คิวต่อช่วงเวลา</li>
