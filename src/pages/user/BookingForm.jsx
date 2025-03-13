@@ -1,63 +1,64 @@
 // src/pages/user/BookingForm.jsx
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import axios from '../../config/axios';
-import { toast } from 'react-toastify';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import axios from "../../config/axios";
+import { toast } from "react-toastify";
 
 const BookingForm = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableSlots, setAvailableSlots] = useState([]);
+  const [bookingsPerSlot, setBookingsPerSlot] = useState({}); // เพิ่มตัวแปรเก็บจำนวนการจองในแต่ละช่วงเวลา
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // สร้าง state สำหรับเก็บข้อมูลการจอง
   const [bookingData, setBookingData] = useState({
-    firstName: currentUser?.firstName || '',
-    lastName: currentUser?.lastName || '',
-    phone: currentUser?.phone || '',
-    appointmentDate: '',
-    appointmentTime: '',
-    initialSymptoms: '',
-    symptom: ''
+    firstName: currentUser?.firstName || "",
+    lastName: currentUser?.lastName || "",
+    phone: currentUser?.phone || "",
+    appointmentDate: "",
+    appointmentTime: "",
+    initialSymptoms: "",
+    symptom: "",
   });
-  
+
   // สร้าง state สำหรับ validation
   const [errors, setErrors] = useState({});
-  
+
   // สร้าง state สำหรับควบคุมการแสดงโมดัลเลือกเวลา
   const [showTimeModal, setShowTimeModal] = useState(false);
-  
+
   // สร้าง state สำหรับควบคุมการแสดงโมดัลยืนยันการจอง
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  
+
   // กำหนดขอบเขตของวันที่สามารถเลือกได้
   const today = new Date();
-  const minDate = today.toISOString().split('T')[0]; // วันนี้ในรูปแบบ YYYY-MM-DD
-  
+  const minDate = today.toISOString().split("T")[0]; // วันนี้ในรูปแบบ YYYY-MM-DD
+
   // ฟังก์ชันแปลงรูปแบบวันที่เป็นภาษาไทย
   const formatThaiDate = (dateString) => {
-    if (!dateString) return '';
-    
+    if (!dateString) return "";
+
     const date = new Date(dateString);
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    return date.toLocaleDateString('th-TH', options);
+    const options = { day: "numeric", month: "long", year: "numeric" };
+    return date.toLocaleDateString("th-TH", options);
   };
-  
+
   // รายการอาการให้เลือก
   const symptoms = [
-    'ตรวจรักษาโรคทั่วไป',
-    'ปรึกษาแพทย์ทั่วไป',
-    'ออกใบรับรองแพทย์',
-    'วางแผนครอบครัว(การคุมกำเนิด)',
-    'ตรวจเบาหวานและความดันโลหิตสูง',
-    'ตรวจสุขภาพประจำปี',
-    'ล้างแผล เย็บแผล ตัดไหม',
-    'อัลตร้าซาวด์',
-    'ฉีดยา',
-    'พ่นยา',
-    'อื่นๆ'
+    "ตรวจรักษาโรคทั่วไป",
+    "ปรึกษาแพทย์ทั่วไป",
+    "ออกใบรับรองแพทย์",
+    "วางแผนครอบครัว(การคุมกำเนิด)",
+    "ตรวจเบาหวานและความดันโลหิตสูง",
+    "ตรวจสุขภาพประจำปี",
+    "ล้างแผล เย็บแผล ตัดไหม",
+    "อัลตร้าซาวด์",
+    "ฉีดยา",
+    "พ่นยา",
+    "อื่นๆ",
   ];
 
   // ดึงข้อมูลช่วงเวลาว่างเมื่อวันที่เปลี่ยนแปลง
@@ -65,22 +66,29 @@ const BookingForm = () => {
     const fetchAvailableSlots = async () => {
       if (!bookingData.appointmentDate) {
         setAvailableSlots([]);
+        setBookingsPerSlot({});
         return;
       }
 
       setIsLoading(true);
       try {
-        const response = await axios.get(`/bookings/available-slots/${bookingData.appointmentDate}`);
+        const response = await axios.get(
+          `/bookings/available-slots/${bookingData.appointmentDate}`
+        );
         setAvailableSlots(response.data.availableSlots || []);
-        
+        setBookingsPerSlot(response.data.bookingsPerSlot || {}); // เก็บข้อมูลจำนวนการจองในแต่ละช่วงเวลา
+
         // ถ้าไม่มีช่วงเวลาว่าง แสดงข้อความแจ้งเตือน
         if (response.data.message && !response.data.available) {
           toast.info(response.data.message);
         }
       } catch (error) {
-        console.error('Error fetching available slots:', error);
-        toast.error(error.response?.data?.message || 'ไม่สามารถดึงข้อมูลช่วงเวลาว่างได้');
+        console.error("Error fetching available slots:", error);
+        toast.error(
+          error.response?.data?.message || "ไม่สามารถดึงข้อมูลช่วงเวลาว่างได้"
+        );
         setAvailableSlots([]);
+        setBookingsPerSlot({});
       } finally {
         setIsLoading(false);
       }
@@ -88,171 +96,234 @@ const BookingForm = () => {
 
     fetchAvailableSlots();
   }, [bookingData.appointmentDate]);
-  
+
   // จัดการการเปลี่ยนแปลงของข้อมูลในฟอร์ม
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // กรณีเลือก "อื่นๆ" ในอาการ
-    if (name === 'symptom' && value === 'อื่นๆ') {
-      setBookingData(prev => ({
+    if (name === "symptom" && value === "อื่นๆ") {
+      setBookingData((prev) => ({
         ...prev,
-        initialSymptoms: '', // รีเซ็ตข้อมูลอาการอื่นๆ
-        [name]: value
+        initialSymptoms: "", // รีเซ็ตข้อมูลอาการอื่นๆ
+        [name]: value,
       }));
-    } else if (name === 'symptom' && value !== 'อื่นๆ') {
-      setBookingData(prev => ({
+    } else if (name === "symptom" && value !== "อื่นๆ") {
+      setBookingData((prev) => ({
         ...prev,
         initialSymptoms: value,
-        [name]: value
+        [name]: value,
       }));
-    } else if (name === 'otherSymptom') {
-      setBookingData(prev => ({
+    } else if (name === "otherSymptom") {
+      setBookingData((prev) => ({
         ...prev,
-        initialSymptoms: value
+        initialSymptoms: value,
       }));
-    } else if (name === 'date') {
+    } else if (name === "date") {
       // เมื่อวันที่เปลี่ยน ให้รีเซ็ตเวลาที่เลือก
-      setBookingData(prev => ({
+      setBookingData((prev) => ({
         ...prev,
         appointmentDate: value,
-        appointmentTime: ''
+        appointmentTime: "",
       }));
     } else {
-      setBookingData(prev => ({
+      setBookingData((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
-    
+
     // ล้าง error เมื่อมีการแก้ไข
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
-  
+
   // เลือกเวลานัดหมาย
   const handleSelectTime = (time) => {
-    setBookingData(prev => ({ 
-      ...prev, 
-      appointmentTime: time
+    setBookingData((prev) => ({
+      ...prev,
+      appointmentTime: time,
     }));
     setShowTimeModal(false);
   };
-  
+
   // ตรวจสอบความถูกต้องของข้อมูล
   const validateForm = () => {
     const newErrors = {};
-    
+
     // ตรวจสอบชื่อ
     if (!bookingData.firstName.trim()) {
-      newErrors.firstName = 'กรุณากรอกชื่อ';
+      newErrors.firstName = "กรุณากรอกชื่อ";
     }
-    
+
     // ตรวจสอบนามสกุล
     if (!bookingData.lastName.trim()) {
-      newErrors.lastName = 'กรุณากรอกนามสกุล';
+      newErrors.lastName = "กรุณากรอกนามสกุล";
     }
-    
+
     // ตรวจสอบเบอร์โทร
     if (!bookingData.phone.trim()) {
-      newErrors.phone = 'กรุณากรอกเบอร์โทรศัพท์';
+      newErrors.phone = "กรุณากรอกเบอร์โทรศัพท์";
     } else if (!/^\d{10}$/.test(bookingData.phone.trim())) {
-      newErrors.phone = 'เบอร์โทรศัพท์ไม่ถูกต้อง (ต้องเป็นตัวเลข 10 หลัก)';
+      newErrors.phone = "เบอร์โทรศัพท์ไม่ถูกต้อง (ต้องเป็นตัวเลข 10 หลัก)";
     }
-    
+
     // ตรวจสอบวันที่
     if (!bookingData.appointmentDate) {
-      newErrors.appointmentDate = 'กรุณาเลือกวันที่';
+      newErrors.appointmentDate = "กรุณาเลือกวันที่";
     }
-    
+
     // ตรวจสอบเวลา
     if (!bookingData.appointmentTime) {
-      newErrors.appointmentTime = 'กรุณาเลือกเวลา';
+      newErrors.appointmentTime = "กรุณาเลือกเวลา";
     }
-    
+
     // ตรวจสอบอาการ
     if (!bookingData.initialSymptoms.trim()) {
-      newErrors.symptom = 'กรุณาเลือกหรือระบุอาการเบื้องต้น';
+      newErrors.symptom = "กรุณาเลือกหรือระบุอาการเบื้องต้น";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   // แสดงโมดัลยืนยันการจอง
   const handleProceedToConfirm = (e) => {
     e.preventDefault();
-    
+
     // ตรวจสอบความถูกต้องของข้อมูล
     if (!validateForm()) {
       // หากข้อมูลไม่ถูกต้อง จะไม่ดำเนินการต่อ
       return;
     }
-    
+
     // แสดงโมดัลยืนยันการจอง
     setShowConfirmModal(true);
   };
-  
+
   // ส่งข้อมูลการจอง
   const handleSubmit = async () => {
     // เตรียมข้อมูลสำหรับส่งไปยังเซิร์ฟเวอร์
     const bookingPayload = {
       appointmentDate: bookingData.appointmentDate,
       appointmentTime: bookingData.appointmentTime,
-      initialSymptoms: bookingData.initialSymptoms
+      initialSymptoms: bookingData.initialSymptoms,
     };
-    
+
     setIsSubmitting(true);
-    
+
     try {
       // ส่งข้อมูลไปยัง API
-      await axios.post('/bookings', bookingPayload);
-      
+      await axios.post("/bookings", bookingPayload);
+
       // ปิดโมดัลยืนยัน
       setShowConfirmModal(false);
-      
-      toast.success('จองนัดหมายสำเร็จ');
-      
+
+      toast.success("จองนัดหมายสำเร็จ");
+
       // Redirect กลับไปหน้า Home หรือหน้าแสดงรายละเอียดการจอง
-      navigate('/user');
+      navigate("/user");
     } catch (error) {
-      console.error('Booking error:', error);
-      toast.error(error.response?.data?.message || 'เกิดข้อผิดพลาดในการจองนัดหมาย');
-      
+      console.error("Booking error:", error);
+      toast.error(
+        error.response?.data?.message || "เกิดข้อผิดพลาดในการจองนัดหมาย"
+      );
+
       // ปิดโมดัลยืนยัน
       setShowConfirmModal(false);
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   // ฟอร์แมตเบอร์โทรศัพท์ให้อ่านง่าย
   const formatPhone = (phone) => {
-    if (!phone) return '';
-    
+    if (!phone) return "";
+
     // แสดงเบอร์โทรในรูปแบบ 099-019-**** (แสดงเฉพาะ 7 ตัวแรก)
     const visiblePart = phone.substring(0, 7);
-    const hiddenPart = phone.substring(7).replace(/./g, '*');
-    
+    const hiddenPart = phone.substring(7).replace(/./g, "*");
+
     // จัดรูปแบบ XXX-XXX-XXXX
-    const formatted = `${visiblePart.substring(0, 3)}-${visiblePart.substring(3, 6)}-${hiddenPart}`;
-    
+    const formatted = `${visiblePart.substring(0, 3)}-${visiblePart.substring(
+      3,
+      6
+    )}-${hiddenPart}`;
+
     return formatted;
   };
-  
+
+  // แสดงสถานะช่วงเวลา (ว่าง, เหลือ 1 คิว, เต็ม)
+  const getSlotStatus = (time) => {
+    const bookingsCount = bookingsPerSlot[time] || 0;
+
+    if (bookingsCount === 0) {
+      return "ว่าง";
+    } else if (bookingsCount === 1) {
+      return "เหลือ 1 คิว";
+    } else {
+      return "เต็ม";
+    }
+  };
+
+  // กำหนดสีของปุ่มเวลาตามสถานะ
+  const getButtonColorClass = (time) => {
+    const bookingsCount = bookingsPerSlot[time] || 0;
+
+    if (bookingsCount === 0) {
+      return "bg-blue-800 hover:bg-blue-700"; // ว่าง - สีน้ำเงินเข้ม
+    } else if (bookingsCount === 1) {
+      return "bg-amber-500 hover:bg-amber-400"; // เหลือ 1 คิว - สีเหลืองอำพัน
+    } else {
+      return "bg-gray-400 cursor-not-allowed"; // เต็ม - สีเทา
+    }
+  };
+
   return (
     <div className="bg-green-50 min-h-screen pb-16 pt-6">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-center text-green-800 mb-6">จองนัดหมาย</h2>
-        
+        <h2 className="text-xl font-semibold text-center text-green-800 mb-6">
+          จองนัดหมาย
+        </h2>
+        <div className="clinic-hours p-4 bg-white rounded-lg shadow">
+          <h3 className="text-lg font-semibold text-green-800 mb-2">
+            เวลาทำการคลินิก
+          </h3>
+          <ul className="space-y-1">
+            <li className="flex justify-between">
+              <span>วันจันทร์ - ศุกร์:</span>
+              <span className="font-medium">16:00 - 20:30 น.</span>
+            </li>
+            <li className="flex justify-between">
+              <span>วันเสาร์ - อาทิตย์:</span>
+              <span className="font-medium text-red-500">ปิดทำการ</span>
+            </li>
+          </ul>
+          <p className="mt-2 text-sm text-gray-600">
+            นัดหมายล่วงหน้าอย่างน้อย 30 นาที และจำกัด 2 คิวต่อช่วงเวลา
+          </p>
+        </div>
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+          <h4 className="font-medium text-blue-800">ข้อมูลการจอง</h4>
+          <ul className="mt-1 text-sm text-blue-700 list-disc list-inside">
+            <li>คลินิกเปิดให้บริการวันจันทร์ - ศุกร์ เวลา 16:00 - 20:30น.</li>
+            <li>ปิดให้บริการวันเสาร์และวันอาทิตย์</li>
+            <li>สามารถจองล่วงหน้าได้สูงสุด 30 วัน</li>
+            <li>กรุณาเข้ารับบริการก่อนเวลานัดหมาย 15 นาที</li>
+            <li>จำกัด 2 คิวต่อช่วงเวลา</li>
+          </ul>
+        </div>
         <form onSubmit={handleProceedToConfirm} className="space-y-4">
           {/* ชื่อ */}
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="firstName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               ชื่อ <span className="text-red-500">*</span>
             </label>
             <input
@@ -261,17 +332,22 @@ const BookingForm = () => {
               name="firstName"
               value={bookingData.firstName}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border ${errors.firstName ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
+              className={`w-full px-3 py-2 border ${
+                errors.firstName ? "border-red-300" : "border-gray-300"
+              } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
               placeholder="กรอกชื่อ"
             />
             {errors.firstName && (
               <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
             )}
           </div>
-          
+
           {/* นามสกุล */}
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="lastName"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               นามสกุล <span className="text-red-500">*</span>
             </label>
             <input
@@ -280,17 +356,22 @@ const BookingForm = () => {
               name="lastName"
               value={bookingData.lastName}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border ${errors.lastName ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
+              className={`w-full px-3 py-2 border ${
+                errors.lastName ? "border-red-300" : "border-gray-300"
+              } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
               placeholder="กรอกนามสกุล"
             />
             {errors.lastName && (
               <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
             )}
           </div>
-          
+
           {/* เบอร์โทร */}
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               เบอร์โทรศัพท์ <span className="text-red-500">*</span>
             </label>
             <input
@@ -299,17 +380,22 @@ const BookingForm = () => {
               name="phone"
               value={bookingData.phone}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border ${errors.phone ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
+              className={`w-full px-3 py-2 border ${
+                errors.phone ? "border-red-300" : "border-gray-300"
+              } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
               placeholder="เช่น 0812345678"
             />
             {errors.phone && (
               <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
             )}
           </div>
-          
+
           {/* วันที่ */}
           <div>
-            <label htmlFor="appointmentDate" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="appointmentDate"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               วันที่ <span className="text-red-500">*</span>
             </label>
             <input
@@ -319,65 +405,97 @@ const BookingForm = () => {
               value={bookingData.appointmentDate}
               onChange={handleChange}
               min={minDate}
-              className={`w-full px-3 py-2 border ${errors.appointmentDate ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
+              className={`w-full px-3 py-2 border ${
+                errors.appointmentDate ? "border-red-300" : "border-gray-300"
+              } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
             />
             {errors.appointmentDate && (
-              <p className="mt-1 text-sm text-red-600">{errors.appointmentDate}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.appointmentDate}
+              </p>
             )}
           </div>
-          
+
           {/* เวลา - แสดงเป็น Modal คล้ายกับในภาพ */}
           <div>
-            <label htmlFor="appointmentTime" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="appointmentTime"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               เวลา <span className="text-red-500">*</span>
             </label>
             <button
               type="button"
               disabled={!bookingData.appointmentDate || isLoading}
               onClick={() => setShowTimeModal(true)}
-              className={`w-full px-3 py-2 border ${errors.appointmentTime ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 ${!bookingData.appointmentDate ? 'bg-gray-100' : 'bg-white'} text-left`}
+              className={`w-full px-3 py-2 border ${
+                errors.appointmentTime ? "border-red-300" : "border-gray-300"
+              } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 ${
+                !bookingData.appointmentDate ? "bg-gray-100" : "bg-white"
+              } text-left`}
             >
-              {isLoading ? 'กำลังโหลดข้อมูล...' : bookingData.appointmentTime ? `${bookingData.appointmentTime} น.` : 'เลือกเวลา'}
+              {isLoading
+                ? "กำลังโหลดข้อมูล..."
+                : bookingData.appointmentTime
+                ? `${bookingData.appointmentTime} น.`
+                : "เลือกเวลา"}
             </button>
             {errors.appointmentTime && (
-              <p className="mt-1 text-sm text-red-600">{errors.appointmentTime}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.appointmentTime}
+              </p>
             )}
-            {bookingData.appointmentDate && availableSlots.length === 0 && !isLoading && (
-              <p className="mt-1 text-sm text-amber-600">ไม่มีเวลาว่างในวันที่เลือก</p>
-            )}
+            {bookingData.appointmentDate &&
+              availableSlots.length === 0 &&
+              !isLoading && (
+                <p className="mt-1 text-sm text-amber-600">
+                  ไม่มีเวลาว่างในวันที่เลือก
+                </p>
+              )}
           </div>
-          
+
           {/* โมดัลเลือกเวลา */}
           {showTimeModal && bookingData.appointmentDate && (
             <div className="fixed inset-0 z-50 overflow-auto bg-white bg-opacity-95 flex flex-col">
               <div className="p-4 border-b border-gray-200">
-                <h2 className="text-center text-xl font-semibold text-gray-800">นัดหมาย:คลินิกนายแพทย์สุทธิลักษณ์</h2>
+                <h2 className="text-center text-xl font-semibold text-gray-800">
+                  นัดหมาย:คลินิกนายแพทย์สุทธิลักษณ์
+                </h2>
               </div>
-              
+
               <div className="flex-1 flex flex-col items-center p-4">
-                <h3 className="text-lg font-medium text-gray-800 mb-6">เลือกเวลา</h3>
-                
+                <h3 className="text-lg font-medium text-gray-800 mb-6">
+                  เลือกเวลา
+                </h3>
+
                 <div className="grid grid-cols-2 gap-4 w-full max-w-md mb-6">
                   {availableSlots.map((time) => (
                     <button
                       key={time}
                       type="button"
                       onClick={() => handleSelectTime(time)}
-                      className="py-3 text-center rounded-md bg-blue-800 text-white hover:bg-blue-700"
+                      className={`py-3 text-center rounded-md text-white flex flex-col items-center justify-center ${getButtonColorClass(
+                        time
+                      )}`}
                     >
-                      {time}
+                      <span>{time}</span>
+                      <span className="text-xs mt-1">
+                        {getSlotStatus(time)}
+                      </span>
                     </button>
                   ))}
-                  
+
                   {availableSlots.length === 0 && !isLoading && (
-                    <p className="col-span-2 text-center text-red-500">ไม่มีเวลาว่างในวันนี้</p>
+                    <p className="col-span-2 text-center text-red-500">
+                      ไม่มีเวลาว่างในวันนี้
+                    </p>
                   )}
-                  
+
                   {isLoading && (
                     <p className="col-span-2 text-center">กำลังโหลดข้อมูล...</p>
                   )}
                 </div>
-                
+
                 <div className="w-full max-w-md space-y-3">
                   <button
                     type="button"
@@ -390,7 +508,7 @@ const BookingForm = () => {
                   >
                     ยืนยันการเลือกเวลา
                   </button>
-                  
+
                   <button
                     type="button"
                     onClick={() => setShowTimeModal(false)}
@@ -402,18 +520,23 @@ const BookingForm = () => {
               </div>
             </div>
           )}
-          
+
           {/* อาการเบื้องต้น */}
           <div>
-            <label htmlFor="symptom" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="symptom"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               อาการเบื้องต้น <span className="text-red-500">*</span>
             </label>
             <select
               id="symptom"
               name="symptom"
-              value={bookingData.symptom || ''}
+              value={bookingData.symptom || ""}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border ${errors.symptom ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
+              className={`w-full px-3 py-2 border ${
+                errors.symptom ? "border-red-300" : "border-gray-300"
+              } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
             >
               <option value="">เลือกอาการเบื้องต้น</option>
               {symptoms.map((symptom) => (
@@ -426,11 +549,14 @@ const BookingForm = () => {
               <p className="mt-1 text-sm text-red-600">{errors.symptom}</p>
             )}
           </div>
-          
+
           {/* อาการอื่นๆ (แสดงเมื่อเลือก "อื่นๆ") */}
-          {bookingData.symptom === 'อื่นๆ' && (
+          {bookingData.symptom === "อื่นๆ" && (
             <div>
-              <label htmlFor="otherSymptom" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="otherSymptom"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 โปรดระบุอาการ <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -439,15 +565,19 @@ const BookingForm = () => {
                 value={bookingData.initialSymptoms}
                 onChange={handleChange}
                 rows="3"
-                className={`w-full px-3 py-2 border ${errors.otherSymptom ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
+                className={`w-full px-3 py-2 border ${
+                  errors.otherSymptom ? "border-red-300" : "border-gray-300"
+                } rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500`}
                 placeholder="กรุณาระบุอาการของท่าน"
               />
               {errors.otherSymptom && (
-                <p className="mt-1 text-sm text-red-600">{errors.otherSymptom}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.otherSymptom}
+                </p>
               )}
             </div>
           )}
-          
+
           {/* ปุ่มส่งข้อมูล */}
           <div className="pt-4">
             <button
@@ -455,48 +585,52 @@ const BookingForm = () => {
               disabled={isSubmitting}
               className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
             >
-              {isSubmitting ? 'กำลังส่งข้อมูล...' : 'ดำเนินการต่อ'}
+              {isSubmitting ? "กำลังส่งข้อมูล..." : "ดำเนินการต่อ"}
             </button>
           </div>
         </form>
       </div>
-      
+
       {/* โมดัลยืนยันการจอง */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 overflow-auto flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg max-w-md w-full mx-4">
             <div className="p-4 bg-green-500 rounded-t-lg">
-              <h2 className="text-xl font-semibold text-center text-white">สรุปการจองคิว</h2>
+              <h2 className="text-xl font-semibold text-center text-white">
+                สรุปการจองคิว
+              </h2>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div className="space-y-2">
                 <div className="flex">
                   <div className="w-1/3 font-medium">ผู้จอง :</div>
                   <div className="w-2/3">{`${bookingData.firstName} ${bookingData.lastName}`}</div>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/3 font-medium">เบอร์ติดต่อ :</div>
                   <div className="w-2/3">{formatPhone(bookingData.phone)}</div>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/3 font-medium">บริการ :</div>
                   <div className="w-2/3">{bookingData.initialSymptoms}</div>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/3 font-medium">วันจอง :</div>
-                  <div className="w-2/3">{formatThaiDate(bookingData.appointmentDate)}</div>
+                  <div className="w-2/3">
+                    {formatThaiDate(bookingData.appointmentDate)}
+                  </div>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/3 font-medium">เวลาจอง :</div>
                   <div className="w-2/3">{bookingData.appointmentTime}</div>
                 </div>
               </div>
-              
+
               <div className="pt-2 space-y-3">
                 <button
                   type="button"
@@ -504,9 +638,9 @@ const BookingForm = () => {
                   disabled={isSubmitting}
                   className="w-full py-3 bg-blue-600 text-white rounded-md font-medium"
                 >
-                  {isSubmitting ? 'กำลังส่งข้อมูล...' : 'ยืนยัน'}
+                  {isSubmitting ? "กำลังส่งข้อมูล..." : "ยืนยัน"}
                 </button>
-                
+
                 <button
                   type="button"
                   onClick={() => setShowConfirmModal(false)}
