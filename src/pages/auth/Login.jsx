@@ -15,7 +15,6 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, currentUser } = useAuth();
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Redirect if already logged in
@@ -51,26 +50,20 @@ const Login = () => {
     }
   };
 
-  const toggleUserType = () => {
-    setIsAdmin(!isAdmin);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          {isAdmin ? "เข้าสู่ระบบสำหรับผู้ดูแล" : "เข้าสู่ระบบ"}
+          เข้าสู่ระบบ
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          {!isAdmin && "หรือ "}
-          {!isAdmin && (
-            <Link
-              to="/register"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              ลงทะเบียนบัญชีใหม่
-            </Link>
-          )}
+          หรือ{" "}
+          <Link
+            to="/register"
+            className="font-medium text-blue-600 hover:text-blue-500"
+          >
+            ลงทะเบียนบัญชีใหม่
+          </Link>
         </p>
       </div>
 
@@ -167,11 +160,7 @@ const Login = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                      isAdmin
-                        ? "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
-                        : "bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
-                    } focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50`}
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                   >
                     {isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
                   </button>
@@ -179,18 +168,6 @@ const Login = () => {
               </Form>
             )}
           </Formik>
-
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={toggleUserType}
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              {isAdmin
-                ? "เข้าสู่ระบบสำหรับผู้ใช้ทั่วไป"
-                : "เข้าสู่ระบบสำหรับผู้ดูแลระบบ"}
-            </button>
-          </div>
         </div>
       </div>
     </div>

@@ -4,7 +4,10 @@ import { useAuth } from '../../hooks/useAuth';
 import UserLayout from '../layout/UserLayout';
 
 const UserRoute = () => {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading, isAdmin } = useAuth();
+  
+  // Add debug log to check user info
+  console.log("UserRoute check:", { currentUser, isAdmin, userRole: currentUser?.role, userIsAdmin: currentUser?.isAdmin });
 
   // Show loading spinner if still checking auth status
   if (loading) {
@@ -19,8 +22,14 @@ const UserRoute = () => {
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
+  
+  // Redirect admin users to admin dashboard
+  // เพิ่มการตรวจสอบเพื่อป้องกันผู้ดูแลเข้าถึงหน้าผู้ใช้ทั่วไป
+  if (isAdmin || currentUser.isAdmin || currentUser.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
 
-  // Render child routes wrapped in user layout if authenticated
+  // Render child routes wrapped in user layout if authenticated and not admin
   return (
     <UserLayout>
       <Outlet />

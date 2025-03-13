@@ -4,6 +4,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'react-toastify';
 import socket from '../../socket'; // สร้างไฟล์นี้แยกต่างหาก
+import { FaNewspaper } from 'react-icons/fa';
 
 const UserLayout = () => {
   const location = useLocation();
@@ -34,7 +35,7 @@ const UserLayout = () => {
         
         // เล่นเสียงแจ้งเตือน (ถ้ามีไฟล์เสียง)
         try {
-          const audio = new Audio('/notification.mp3');
+          const audio = new Audio('/sre/assets/notification.mp3');
           audio.play();
         } catch (error) {
           console.error('Error playing notification sound:', error);
@@ -93,7 +94,8 @@ const UserLayout = () => {
               !location.pathname.includes('/user/profile') && 
               !location.pathname.includes('/user/personal-info') && 
               !location.pathname.includes('/user/change-password') && 
-              !location.pathname.includes('/user/booking-history')
+              !location.pathname.includes('/user/booking-history') &&
+              !location.pathname.includes('/user/articles')
                 ? 'text-blue-600' : 'text-gray-600'
             }`}
           >
@@ -135,6 +137,16 @@ const UserLayout = () => {
               />
             </svg>
             <span className="text-xs mt-1">นัดหมาย</span>
+          </Link>
+          <Link
+            to="/user/articles"
+            className={`flex flex-col items-center py-3 px-1 ${
+              isActiveRoute('/user/articles')
+                ? 'text-blue-600' : 'text-gray-600'
+            }`}
+          >
+            <FaNewspaper className="h-6 w-6" />
+            <span className="text-xs mt-1">บทความ</span>
           </Link>
           <Link
             to="/user/profile"
